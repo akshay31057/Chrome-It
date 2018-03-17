@@ -291,6 +291,15 @@ $(document).ready(function(){
 								});
 							});
 						}
+						else if(data.result.fulfillment.speech === '@open'){
+							Speech("opening");
+							chrome.tabs.create({'url': 'chrome://newtab'});
+						}
+						else if(data.result.fulfillment.speech === "@downloads"){
+							chrome.tabs.create({'url': 'chrome://downloads'});
+							alert(data.result.fulfillment.speech);
+							Speech("opening! Downloads");
+						}
 						else if(data.result.fulfillment.speech === "@next"){
 							var currenttab;
 							chrome.tabs.getSelected(null, function(tab) {
@@ -315,6 +324,19 @@ $(document).ready(function(){
 							chrome.tabs.create({'url': 'chrome://history/'});
 							Speech("opening! History.");
 						}
+						else if((idx = (txt.toLowerCase()).lastIndexOf("translate".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						var speak=txt.substring(txt.indexOf(" ")+1,txt.length);
+						chrome.tabs.create({
+                      'url': 'https://translate.google.com/#auto/hi/'+speak
+                 		 });
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("inbox".toLowerCase())) !==-1)
+					{
+						Speech("Opening your gmail account.");
+						chrome.tabs.create({'url':'https://www.gmail.com/'});
+					}
 
 						else if(data.result.fulfillment.speech === "@prev"){
 							var currenttab;
@@ -387,6 +409,63 @@ $(document).ready(function(){
 						chrome.tabs.executeScript({
 							code: c
 							});
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("print".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						chrome.tabs.executeScript({
+							code: "window.print()"
+							});
+						/*chrome.tabs.executeScript({
+							file: "capture.js"
+							});*/
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("halt".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						chrome.tabs.executeScript({
+							code: "var v=document.getElementsByTagName('video')[0]; v.pause();" 
+							});
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("play".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						chrome.tabs.executeScript({
+							code: "var v=document.getElementsByTagName('video')[0]; v.play();" 
+							});
+
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("next video".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						chrome.tabs.executeScript({
+							code: "var nbtn=document.getElementsByClassName('ytp-next-button')[0]; nbtn.click();" 
+							});
+
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("translate".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						var speak=txt.substring(txt.indexOf(" ")+1,txt.length);
+						chrome.tabs.create({
+                      'url': 'https://translate.google.com/#auto/hi/'+speak
+                 		 });
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("inbox".toLowerCase())) !==-1)
+					{
+						Speech("Opening your gmail account.");
+						chrome.tabs.create({'url':'https://www.gmail.com/'});
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("incognito".toLowerCase())) !==-1)
+					{
+						Speech("Opening incognito window.");
+						chrome.windows.create({incognito:true,});
+						
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("weather".toLowerCase())) !==-1)
+					{
+						alert(txt);
+						weather(txt.substring(txt.indexOf(" "),txt.length));
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("link".toLowerCase())) !==-1)
 					{
@@ -499,6 +578,43 @@ $(document).ready(function(){
 		}
 	}
 
+
+  function processIt(data) {
+      var temperature = parseInt(data.main.temp - 273.15);
+      var humidity = parseInt(data.main.humidity);
+      var windSpeed = parseInt(data.wind.speed);
+      var cloudsDescription = data.weather[0].description;
+      var temperatureString = "Present temperature is around  " + temperature+" degree celsius";
+      var humidityString = "with humidity: " + humidity+"%";
+      var windSpeedString = "and wind speed :" + windSpeed+ "Kilometer per hour";
+      var cloudsDescriptionString = "sky seems " + cloudsDescription;
+
+      var weather_response = temperatureString + ', ' +
+          humidityString + ', ' +
+          windSpeedString + ', ' +
+          cloudsDescriptionString;
+
+      setResponse(weather_response);
+      alert(weather_response);
+
+      if(debug){
+        alert("temperature is  "+temperature);
+        alert("humidity is "+humidity);
+        alert("wind speed is "+windSpeed);
+        alert("sky description "+cloudsDescription);   
+      }
+  }
+
+  function weather(city) {
+      var baseUrl = "http://api.openweathermap.org/data/2.5/weather?q=";
+      var key = "ec58b4518e2a455913f8e64a7ac16248";
+      var Url = baseUrl + city + "&APPID=" + key;
+
+      $.getJSON(Url, function(dataJson) {
+          var data = JSON.stringify(dataJson);
+          var parsedData = JSON.parse(data);
+          processIt(parsedData);
+      });
   }
 
 
