@@ -1,25 +1,30 @@
 {
    "background": {
       "persistent": true,
-      "scripts": [  "background.js" ]
+      "scripts": [ "js/jquery.min.js", "js/nlp_compromise.min.js", "js/on-off-switch.js", "js/on-off-switch-onload.js", "js/jquery-1.11.2.min.js", "background.js" ]
    },
    "browser_action": {
       "default_icon": {
          "128": "tap.png"
       },
-      "default_title": "Chrome-It"
+      "default_popup": "popup.html",
+      "default_title": "Arpit & Akshit- Your Personal Assistant"
+   },
+   "chrome_url_overrides": {
+      "newtab": "index.html"
    },
    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
    "description": "Now use your voice to control your browser.",
    "icons": {
-      "128": "chrom.png",
-      "16": "chrom.png",
-      "48": "chrom.png"
+      "128": "chromassist.png",
+      "16": "chromassist.png",
+      "48": "chromassist.png"
    },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjkyZJa1nr/6MFayEGPz9SUxJxSi4T91Smhy99AqU7BACWX2AsaX20vPze6HvsJdOZt55g20o6gGAsRvx9fg3M99Z3igPL3BZiXx7zInqggFBjyVa5K8atxJLFHN6H1zU9cqKOKyLRV4r/KorYFmdpLYRsQbbgOP79BXISE4u1FrRbvJ6nWhceLTUZIqIhV3qNgeAnNB6/ZBgjavaXiHsVlT9sB7DZvqxkaRF/QtPrtCBtRMlzKJ5Y+164PrMOKX1ZfUeSdZECdCcGqgMVyc8v1PSP5P8ZBw2y4oWOOOYXUjGr/h1XSdJXbBFxp0fUDrapZMyu4jPYa1KAICkuhfInwIDAQAB",
    "manifest_version": 2,
-   "name": "Chrome-It",
-   "permissions": [ "bookmarks", "history", "geolocation", "topSites", "tabs", "storage" ],
-   
-   
+   "name": "Arpit & Akshit - Your Personal Assistant!",
+   "permissions": [ "activeTab", "desktopCapture", "storage", "unlimitedStorage","bookmarks", "history", "geolocation", "topSites", "tabs", "\u003Call_urls>", "https://ajax.googleapis.com/", "http://clients1.google.com/complete/search", "http://suggestqueries.google.com/complete/search", "storage" ],
+   "short_name": "Arpit & Akshit",
+   "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "2.1.7"
 }
