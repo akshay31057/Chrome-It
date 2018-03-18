@@ -42,3 +42,5 @@ Respective commands have been shown after each feature.
 * Share directly on twitter: **select the text and share using context menu**
 * Opening inbox: **my inbox**
 * Reading news: **news**
+
+#### Link to Demonstration Video: https://drive.google.com/drive/folders/1Syy1TBvn2njh9GN2WbpdvIaQqz-DuI-e
