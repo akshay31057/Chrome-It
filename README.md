@@ -2,23 +2,43 @@
 
 ## A google chrome extension.
 
-This extension is the google chrome assistant to make chrome operate over the voice commands and gestures. It is being developed to make it easy for the handicapped people use chrome. It provides a variety of functions of chrome over voice commands such as:
+Chrome-It is an extension which is an attempt to contribute towards improving the browsing experience of the physically challenged people even in the smallest ways. Besides, it also includes a huge lot of features which are focused on the youth.
 
-* Opening, closing, changing tabs of the browser.
-* Playing, stopping and changing videos over the net.
-* Opening URL.
-* Grouping tabs based upon the content of the web-page displayed by the tabs.
-* Maximising, minimizing window screen.
-* Opening history, extension, downloads page of chrome.
-* Opening new incognito window.
-* Playing games.
-* Searching directly on youTube, wikipedia, etc.
-* Tweet directly using twitter.
-* Taking screenshot.
-* Changing background of the web page.
+## Features:
 
-The following functions can be controlled using gestures:
+Respective commands have been shown after each feature.
 
-* Page scrolling.
-* Video playing and pausing.
-* Zoom-in and zoom-out
+### Main Features:
+* Group tabs based upon the content through the voice: **group content**
+* Change background color for color blind: **change background #color_name**
+* Voice translate into language you want: **translate #word**
+* Gesture control for scrolling: **Always active, which can be disabled**
+* Voice control for playing/pausing video online: **play, pause**
+
+### Normal Chrome Features:
+* Open tab: **open new tab**
+* Close tab: **close tab**
+* Navigate tabs: **tab #tab_no**
+* Minimize window: **minimize**
+* Maximize window: **maximize**
+* Open incognito: **incognito**
+* Settings, history, downloads: **#name**
+* Back to previous URL: **backward**
+* Print Screen: **print**
+* Open direct URL: **#website name**
+* Zoom in: **zoom in**
+* Zoom out: **zoom out**
+* Add to Favorites: **add bookmark**
+
+### Additional Bot Features
+* Remember your name: **call me #your_name**
+* Speak a random joke: **tell me a joke**
+* Tell weather: **weather #city_name**
+* Customize trigger: **can be set using pop-up menu in the extension**
+* Play game: **let us play**
+* Navigate through google search: **link #link_no**
+* Search Directly on wikipedia: **#title wikipedia**
+* Search Directly on YouTube: **search #title on youtube**
+* Share directly on twitter: **select the text and share using context menu**
+* Opening inbox: **my inbox**
+* Reading news: **news**
