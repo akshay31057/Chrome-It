@@ -3,6 +3,65 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 	//////////////////////////////////////Google Analytics////////////////////////////////////  
 });
 /////////////////////events///////////////////////////
+var doGroup = function() {
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    var tempTabs;
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === this.DONE) {
+            var arr = new Array(tempTabs.length);
+            var count = 0;
+            var tabObject = JSON.parse(this.responseText);
+            for ( var i = 0 ; i < tabObject.cluster_list.length ; i++ )
+            {
+                var keys = Object.keys(tabObject.cluster_list[i].document_list);
+                for ( var j = 0 ; j < keys.length ; j++ )
+                {
+                    var num = Number(keys[j]);
+                    if(typeof arr[num-1] === 'undefined')
+                    {
+                        arr[num-1]=count;
+                        count++;
+                    }
+                }
+            }
+            for ( var i = 0 ; i < tempTabs.length ; i++)
+            {
+                var moveProperties = {index:arr[i]};
+                chrome.tabs.move(tempTabs[i].id,moveProperties);    
+            }
+            
+        }
+    });
+    var data = "key=f2899c9501ae869ef2bbe29a30785406&lang=en&txt=";
+    var moveAll = function(tabs){
+        tempTabs = tabs;
+        var my_titles = [];
+        for(var i = 0 ; i < tabs.length ; i++){
+            my_titles=my_titles.concat(tabs[i].title);
+        }
+        func(my_titles);
+    };
+    
+    var func = function(my_titles){
+        for ( var i = 0 ;i < my_titles.length ; i++)
+        {
+            my_titles[i] = my_titles[i].replace("/[^a-zA-Z? ]/g, "," ");
+            my_titles[i] = my_titles[i].replace("  "," ");
+            
+        }
+                
+            for(var i = 0 ; i < my_titles.length; i++)
+            {
+                data = data.concat("\n",my_titles[i]);
+            }
+            xhr.open("POST", "http://api.meaningcloud.com/clustering-1.1");
+            xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+    }
+    chrome.tabs.query({ currentWindow: true}, moveAll);
+};
+
 $(document).ready(function(){
 	(function(i,s,o,g,r,a,m)
 	{
@@ -26,8 +85,6 @@ $(document).ready(function(){
     checkOnline(); 
 
     //first time when application will be loaded
-    chrome.runtime.setUninstallURL("https://goo.gl/forms/7EIjOCgMqZSAsIj92", function(){
-    });
 
     chrome.storage.local.get(/* String or Array */["firsttime"], function(items2){
         if(items2.firsttime === undefined || items2.firsttime === 2){
@@ -37,30 +94,6 @@ $(document).ready(function(){
 			});
         }
 	});
-/*var tabid=0;
-     chrome.tabs.onHighlighted.addListener(function(hi){
-      console.log(hi.tabIds[0]);
-       tabid=hi.tabIds[0];
-       myfun();
-     });
-     selectionontab="";
-   function myfun(){
-      if(tabid!=0){
-      chrome.tabs.executeScript(tabid,{
-          code: "window.getSelection().toString();"
-        },function(selection){
-          if(selectionontab!=selection[0]){
-            console.log(selectionontab);
-           // Speech(selection[0]);
-            selectionontab=selection[0];
-            myfun();
-          }
-          else
-            myfun();
-        }
-        );
-    } 
-    }*/
 
      //function for giving sleep 
     function sleep(milliseconds) {
@@ -97,21 +130,13 @@ $(document).ready(function(){
 					for (var i = event.resultIndex; i < event.results.length; ++i) {
 						text += event.results[i][0].transcript;
 					}
-					//setInput(text);
-					//stopRecognition();
 				};
 				recognition.onend = function() {
 					chrome.storage.local.get(/* String or Array */["trigger"], function(items2){
 						if(text.toLowerCase() === items2.trigger.toLowerCase()){
 							// alert(text);
-							Speech("Yes Sir. How can I help you?");
+							Speech("Yes Sir.");
 							sleep(1500);
-							/*chrome.storage.local.clear(function() {
-							var error = chrome.runtime.lastError;
-							if (error) {
-							console.error(error);
-							}
-							});*/
 							recognition.stop();
 							startRecognitionaftertrigger();
 						}
@@ -149,9 +174,6 @@ $(document).ready(function(){
 			for (var i = event.resultIndex; i < event.results.length; ++i) {
 				text += event.results[i][0].transcript;
 			}
-			//setInput(text);
-          
-			//stopRecognition();
 		};
 		recognition.onend = function() {
 			if(text === ""){
@@ -192,6 +214,20 @@ $(document).ready(function(){
     function updateRec() {
 		
     }
+    function provideJoke(){
+		var xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
+		xhr.addEventListener("readystatechange",function(){
+			if (this.readyState === this.DONE){
+				var tabObject = JSON.parse(this.responseText);
+				var textJoke = tabObject.value.joke;
+				Speech(textJoke);
+			}
+		});
+		xhr.open("POST", "http://api.icndb.com/jokes/random");
+		xhr.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+		//xhr.send();
+	};
     //sending the data to server
     function send() {
 		
@@ -214,21 +250,6 @@ $(document).ready(function(){
 				}
 				else if(data.result.metadata.intentName === "hello"){
 					Speech("Hello "+chrome.storage.local.get(/* String or Array */["username"]));
-				}
-				else if(data.result.metadata.intentName === "wiki "){
-					var item = data.result.parameters.any
-					chrome.tabs.create({'url':'https://www.youtube.com/results?search_query='+ data.result.parameters.any });
-					/*for (var i=0;i<item.length;i++)
-					{
-						if(item[i]===' ')
-							item[i]='_';
-						if(i===0||item[i-1]==='_')
-						{			
-							if(item[i]===item[i].toLowerCase())
-								item[i]=item[i].toUpperCase();		
-						}
-					}*/
-					//chrome.tabs.create({'url':'https://en.wikipedia.org/wiki/'+ searchWiki(item) });
 				}
 				else if(data.result.metadata.intentName === "youtube search"){
 					chrome.tabs.create({'url':'https://www.youtube.com/results?search_query='+ data.result.parameters.any });
@@ -296,12 +317,13 @@ $(document).ready(function(){
 							chrome.tabs.create({'url': 'chrome://newtab'});
 						}
 						else if(data.result.fulfillment.speech === "@downloads"){
+							Speech("opening! Downloads");
 							chrome.tabs.create({'url': 'chrome://downloads'});
 							alert(data.result.fulfillment.speech);
-							Speech("opening! Downloads");
 						}
 						else if(data.result.fulfillment.speech === "@next"){
 							var currenttab;
+							Speech("opening! next");
 							chrome.tabs.getSelected(null, function(tab) {
 								currenttab = tab.id;										
 								chrome.tabs.query({}, function (tabs) {
@@ -312,34 +334,21 @@ $(document).ready(function(){
 									}
 								});
 							});
-							Speech("opening! next");
 						}
 						else if(data.result.metadata.intentName === "setting")
 						{
-							chrome.tabs.create({'url': 'chrome://settings/'});
 							Speech("opening! Settings.");
+							chrome.tabs.create({'url': 'chrome://settings/'});
+							
 						}
 						else if(data.result.metadata.intentName === "open history")
 						{
-							chrome.tabs.create({'url': 'chrome://history/'});
 							Speech("opening! History.");
+							chrome.tabs.create({'url': 'chrome://history/'});
 						}
-						else if((idx = (txt.toLowerCase()).lastIndexOf("translate".toLowerCase())) !==-1)
-					{
-						alert(txt);
-						var speak=txt.substring(txt.indexOf(" ")+1,txt.length);
-						chrome.tabs.create({
-                      'url': 'https://translate.google.com/#auto/hi/'+speak
-                 		 });
-					}
-					else if((idx = (txt.toLowerCase()).lastIndexOf("inbox".toLowerCase())) !==-1)
-					{
-						Speech("Opening your gmail account.");
-						chrome.tabs.create({'url':'https://www.gmail.com/'});
-					}
-
 						else if(data.result.fulfillment.speech === "@prev"){
 							var currenttab;
+							Speech("opening! prev");
 							chrome.tabs.getSelected(null, function(tab) {
 								currenttab = tab.id;
 								chrome.tabs.query({}, function (tabs) {
@@ -350,7 +359,6 @@ $(document).ready(function(){
 									}
 								});
 							});
-							Speech("opening! prev");
 						}
 						else {
 							if(data.result.metadata.intentName === "users_name"){
@@ -363,7 +371,12 @@ $(document).ready(function(){
 								});
 						
 							}
-							else{ 
+							else if(data.result.metadata.intentName === "I want to hear a joke"){ 
+								Speech("Hope you like this one.");
+								Speech(speech);
+							}
+							else
+							{
 								Speech(speech+" in else");
 								alert(data.result.fulfillment.speech+" "+data.result.metadata.intentName);
 							}
@@ -371,14 +384,12 @@ $(document).ready(function(){
 					}
 				}
 				else {
-					//setResponse(data.result.fulfillment.speech);
-					
 					var idx;
 					if((idx = (txt.toLowerCase()).lastIndexOf("Wikipedia".toLowerCase())) !==-1)
 					{
 						Speech("I am searching this on wikipedia.");
 						var tmp=txt.substring(0,idx-1);
-						alert(data.result.metadata.intentName+" "+txt+" "+tmp);
+						//alert(data.result.metadata.intentName+" "+txt+" "+tmp);
 						for (var i=0;i<tmp.length;i++)
 						{
 							if(tmp[i]===' ')
@@ -392,64 +403,80 @@ $(document).ready(function(){
 						chrome.tabs.create({'url': 'https://en.wikipedia.org/wiki/'+tmp});
 						
 					}
-					else if((idx = (txt.toLowerCase()).lastIndexOf("capture screen".toLowerCase())) !==-1)
-						{
-							alert(txt);
-						
-						}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("change background".toLowerCase())) !==-1)
 					{
 						var c="document.body.style.background=";
-						//var mySplitResult = myString.split(" ");
-
 						var last =  txt.lastIndexOf(" ") ;
 						var lastWord = txt.substring(last+1,txt.length);
 						c+="'"+lastWord+"';";
-						alert(c);
 						chrome.tabs.executeScript({
 							code: c
 							});
 					}
+					else if((idx = (txt.toLowerCase()).indexOf("let us".toLowerCase())) !==-1){
+						Speech("enjoy tetris");
+						chrome.tabs.create({'url':'https://tetris.com/play-tetris'});
+					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("print".toLowerCase())) !==-1)
 					{
-						alert(txt);
+						//alert(txt);
 						chrome.tabs.executeScript({
 							code: "window.print()"
-							});
-						/*chrome.tabs.executeScript({
-							file: "capture.js"
-							});*/
+						});
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("halt".toLowerCase())) !==-1)
 					{
-						alert(txt);
+						//alert(txt);
 						chrome.tabs.executeScript({
 							code: "var v=document.getElementsByTagName('video')[0]; v.pause();" 
 							});
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("play".toLowerCase())) !==-1)
 					{
-						alert(txt);
+						//alert(txt);
 						chrome.tabs.executeScript({
 							code: "var v=document.getElementsByTagName('video')[0]; v.play();" 
 							});
-
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("next video".toLowerCase())) !==-1)
 					{
-						alert(txt);
+						//alert(txt);
 						chrome.tabs.executeScript({
 							code: "var nbtn=document.getElementsByClassName('ytp-next-button')[0]; nbtn.click();" 
-							});
+						});
 
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("translate".toLowerCase())) !==-1)
 					{
-						alert(txt);
+						//alert(txt);
 						var speak=txt.substring(txt.indexOf(" ")+1,txt.length);
 						chrome.tabs.create({
                       'url': 'https://translate.google.com/#auto/hi/'+speak
                  		 });
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("weather".toLowerCase())) !==-1)
+					{
+						//alert(txt);
+						weather(txt.substring(txt.indexOf(" "),txt.length));
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("news".toLowerCase())) !==-1)
+					{
+						Speech("Opening");
+						chrome.tabs.create({
+							'url': 'https://news.google.co.in'
+                 		});
+					}
+					else if((idx = (txt.toLowerCase()).lastIndexOf("link".toLowerCase())) !==-1)
+					{
+						//alert(txt);
+						Speech("Opening!");
+						var p=txt.substring(txt.indexOf(" ")+1,txt.length)
+						var num=0;
+						if(p==="to")
+							num= 2;
+						else 
+							num=parseInt(p);
+						chrome.tabs.executeScript({code:'var p=document.getElementsByClassName("r");var q=p['+(num-1)+'].getElementsByTagName("a");var r=q[0].href;window.open(r);'});
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("inbox".toLowerCase())) !==-1)
 					{
@@ -462,21 +489,10 @@ $(document).ready(function(){
 						chrome.windows.create({incognito:true,});
 						
 					}
-					else if((idx = (txt.toLowerCase()).lastIndexOf("weather".toLowerCase())) !==-1)
+					else if((idx = (txt.toLowerCase()).lastIndexOf("backward".toLowerCase())) !==-1)
 					{
-						alert(txt);
-						weather(txt.substring(txt.indexOf(" "),txt.length));
-					}
-					else if((idx = (txt.toLowerCase()).lastIndexOf("link".toLowerCase())) !==-1)
-					{
-						alert(txt);
-						var p=txt.substring(txt.indexOf(" ")+1,txt.length)
-						var num=0;
-						if(p==="to")
-							num= 2;
-						else 
-							num=parseInt(p);
-						chrome.tabs.executeScript({code:'var p=document.getElementsByClassName("r");var q=p['+num+'].getElementsByTagName("a");var r=q[0].href;window.open(r);'});
+						Speech("Going backwards in history.");
+						chrome.tabs.executeScript(null,{code: "window.history.back()"});
 					}
 					else if((idx = (txt.toLowerCase()).lastIndexOf("minimise".toLowerCase())) !==-1)
 					{
@@ -490,7 +506,7 @@ $(document).ready(function(){
 					else if((idx = (txt.toLowerCase()).lastIndexOf("maximize".toLowerCase())) !==-1)
 					{
 						Speech("Maximizing window.");
-					chrome.windows.getCurrent(function func(my_window){
+						chrome.windows.getCurrent(function func(my_window){
 							chrome.windows.update(my_window.id,{state:"maximized"},function(windowUpdated){
 								
 							})
@@ -504,11 +520,51 @@ $(document).ready(function(){
 								chrome.tabs.update(tabs[integer-1].id, { active: true});
 							});
 					}
-					/*else if((idx = (txt.toLowerCase()).lastIndexOf("@settings".toLowerCase())) !==-1)
+					else if((idx = (txt.toLowerCase()).indexOf("arrange heading".toLowerCase())) !==-1)
 					{
-						Speech("Opening your settings.");
-						chrome.tabs.create({'url':'chrome://settings/'});
-					}*/
+						Speech("Arranging the headings of the tab");
+						var move = function(tabs){
+							tabs.sort(function(a,b){
+								if(a.title<b.title)
+									return -1;
+								else if(a.title.toLowerCase()===b.title.toLowerCase())
+									return 0;
+								else
+									return 1;
+							});
+							for ( var i = 0 ; i < tabs.length ; i++ )
+							{
+								var moveProperties = {index : i};
+								chrome.tabs.move(tabs[i].id,moveProperties);
+							}
+						}
+						chrome.tabs.query({ currentWindow: true}, move);
+					}
+					else if((idx = (txt.toLowerCase()).indexOf("group content".toLowerCase())) !==-1)
+					{
+						Speech("Grouping the contents of tabs.");
+						doGroup();
+					}
+					else if((idx = (txt.toLowerCase()).indexOf("zoom in".toLowerCase())) !==-1)
+					{
+						Speech("Zooming in.");
+						chrome.tabs.query({active:true,currentWindow:true},function(tabs){
+							chrome.tabs.setZoom(tabs[0].id, 1.50, function(){});
+						});
+					}
+					else if((idx = (txt.toLowerCase()).indexOf("zoom out".toLowerCase())) !==-1)
+					{
+						Speech("Zooming out.");
+						chrome.tabs.query({active:true,currentWindow:true},function(tabs){
+							chrome.tabs.setZoom(tabs[0].id, 0, function(){});
+						});
+					}
+					else if((idx = (txt.toLowerCase()).indexOf("tell me a joke".toLowerCase())) !==-1)
+					{
+						Speech("Hope you like this one.");
+						provideJoke();
+						Speech("Isn't it good?");
+					}
 					else
 					{
 						setResponse(data.result.fulfillment.speech);
@@ -577,46 +633,41 @@ $(document).ready(function(){
 			}
 		}
 	}
+	function processIt(data) {
+		var temperature = parseInt(data.main.temp - 273.15);
+		var humidity = parseInt(data.main.humidity);
+		var windSpeed = parseInt(data.wind.speed);
+		var cloudsDescription = data.weather[0].description;
+		var temperatureString = "Present temperature is around  " + temperature+" degree celsius";
+		var humidityString = "with humidity: " + humidity+"%";
+		var windSpeedString = "and wind speed :" + windSpeed+ "Kilometer per hour";
+		var cloudsDescriptionString = "sky seems " + cloudsDescription;
 
+		var weather_response = temperatureString + ', ' +
+			humidityString + ', ' +
+			windSpeedString + ', ' +
+			cloudsDescriptionString;
 
-  function processIt(data) {
-      var temperature = parseInt(data.main.temp - 273.15);
-      var humidity = parseInt(data.main.humidity);
-      var windSpeed = parseInt(data.wind.speed);
-      var cloudsDescription = data.weather[0].description;
-      var temperatureString = "Present temperature is around  " + temperature+" degree celsius";
-      var humidityString = "with humidity: " + humidity+"%";
-      var windSpeedString = "and wind speed :" + windSpeed+ "Kilometer per hour";
-      var cloudsDescriptionString = "sky seems " + cloudsDescription;
+		setResponse(weather_response);
+		alert(weather_response);
 
-      var weather_response = temperatureString + ', ' +
-          humidityString + ', ' +
-          windSpeedString + ', ' +
-          cloudsDescriptionString;
-
-      setResponse(weather_response);
-      alert(weather_response);
-
-      if(debug){
-        alert("temperature is  "+temperature);
-        alert("humidity is "+humidity);
-        alert("wind speed is "+windSpeed);
-        alert("sky description "+cloudsDescription);   
-      }
-  }
+		if(debug){
+			alert("temperature is  "+temperature);
+			alert("humidity is "+humidity);
+			alert("wind speed is "+windSpeed);
+			alert("sky description "+cloudsDescription);   
+		}
+	}
 
   function weather(city) {
-      var baseUrl = "http://api.openweathermap.org/data/2.5/weather?q=";
-      var key = "ec58b4518e2a455913f8e64a7ac16248";
-      var Url = baseUrl + city + "&APPID=" + key;
+		var baseUrl = "http://api.openweathermap.org/data/2.5/weather?q=";
+		var key = "ec58b4518e2a455913f8e64a7ac16248";
+		var Url = baseUrl + city + "&APPID=" + key;
 
-      $.getJSON(Url, function(dataJson) {
-          var data = JSON.stringify(dataJson);
-          var parsedData = JSON.parse(data);
-          processIt(parsedData);
-      });
-  }
-
-
+		$.getJSON(Url, function(dataJson) {
+			var data = JSON.stringify(dataJson);
+			var parsedData = JSON.parse(data);
+			processIt(parsedData);
+		});
+	}
 });
-
